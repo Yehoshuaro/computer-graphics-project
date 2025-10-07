@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 
+
 const char* vertexShaderSource = R"(
 #version 330 core
 layout(location = 0) in vec2 aPos;
@@ -22,12 +23,10 @@ in vec2 uv;
 uniform float iTime;
 uniform vec2 iResolution;
 
-// distance field sphere
 float sdSphere(vec3 p, vec3 c, float r) {
     return length(p - c) - r;
 }
 
-// smooth union
 float smoothUnion(float d1, float d2, float k) {
     float h = clamp(0.5 + 0.5*(d2 - d1)/k, 0.0, 1.0);
     return mix(d2, d1, h) - k*h*(1.0 - h);
@@ -49,7 +48,7 @@ float sceneSDF(vec3 p, out vec3 col) {
     }
 
     float d = 999.0;
-    float k = 0.35; // меньше → более разделённые сферы
+    float k = 0.35;
     for (int i = 0; i < count; i++) {
         d = smoothUnion(d, sdSphere(p, centers[i], radii[i]), k);
     }
@@ -70,7 +69,7 @@ vec3 calcNormal(vec3 p) {
 void main() {
     vec2 fragCoord = uv * iResolution;
     vec2 p = (fragCoord - 0.5 * iResolution) / iResolution.y;
-    vec3 ro = vec3(0.0, 0.0, 5.0); // камера чуть дальше
+    vec3 ro = vec3(0.0, 0.0, 5.0);
     vec3 rd = normalize(vec3(p.x, p.y, -1.0));
     
     float t = 0.0;
@@ -136,7 +135,10 @@ int main() {
 
     const int SCR_WIDTH = 1600;
     const int SCR_HEIGHT = 900;
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Spheres Merging Visualization", NULL, NULL);
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Spheres Merging Visualization", monitor, NULL);
+
     glfwMakeContextCurrent(window);
     glfwMaximizeWindow(window);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return -1;
